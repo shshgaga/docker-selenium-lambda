@@ -11,6 +11,7 @@ RUN dnf install -y atk cups-libs gtk3 libXcomposite alsa-lib \
     libXtst pango at-spi2-atk libXt xorg-x11-server-Xvfb \
     xorg-x11-xauth dbus-glib dbus-glib-devel nss mesa-libgbm
 # Install Python libraries
+RUN pip install --upgrade pip
 RUN pip install selenium==4.22.0 \
     beautifulsoup4 \
     requests \
