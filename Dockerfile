@@ -15,7 +15,6 @@ RUN pip install --upgrade pip
 RUN pip install selenium==4.22.0 \
     beautifulsoup4 \
     requests \
-    numpy==1.20.3 \
     pandas==1.4.3 \ 
     boto3 \
     schedule
