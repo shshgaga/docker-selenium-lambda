@@ -20,5 +20,5 @@ RUN pip install selenium==4.22.0 \
     schedule
 COPY --from=build /opt/chrome-linux64 /opt/chrome
 COPY --from=build /opt/chromedriver-linux64 /opt/
-COPY main.py ./#
-CMD [ "main.handler" ]
+COPY main.py ./
+CMD [ "main.lambda_handler" ]
