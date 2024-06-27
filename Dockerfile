@@ -15,7 +15,7 @@ RUN pip install --upgrade pip
 RUN pip install selenium==4.22.0 \
     beautifulsoup4 \
     requests \
-    pandas==2.2.2 \ 
+    pandas==1.4.3 \ 
     boto3 \
     schedule
 COPY --from=build /opt/chrome-linux64 /opt/chrome
