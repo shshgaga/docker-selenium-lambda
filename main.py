@@ -57,7 +57,7 @@ def lambda_handler(event, context):
     
     for id in id_list:
         param_race_id = str(id)[:4] + str(id)[-8:]
-        url = f'{base_url}?type=b8&race_id={param_race_id}&housiki=C2'
+        url = f'{base_url}?type=b8&race_id={param_race_id}&housiki=c2'
         try:
             driver.get(url)
             # 全選択ボタンをクリック（要素が見つかるまで最大10秒間待つ）
