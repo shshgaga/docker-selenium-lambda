@@ -12,6 +12,7 @@ import pandas as pd
 import re
 import boto3
 import io
+import tempfile
 
 
 def load_pickle_from_s3(bucket_name, file_key):
