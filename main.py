@@ -53,6 +53,16 @@ def lambda_handler(event, context):
     
     ol = []
     id_list = load_pickle_from_s3(bucket_name, file_key)
+
+    # デバッグ: id_listの内容を確認
+    print(f"id_list: {id_list}")
+    if not id_list:
+        driver.quit()
+        return {
+            'statusCode': 200,
+            'body': json.dumps('id_list is empty')
+        }
+    
     base_url = 'https://race.netkeiba.com/odds/index.html'
     
     for id in id_list:
@@ -69,10 +79,13 @@ def lambda_handler(event, context):
             innerHTML = wait.until(EC.presence_of_element_located((By.ID, "sort_table"))).get_attribute('outerHTML')
             df_list = pd.read_html(innerHTML)
             ol.append(df_list)
+            # デバッグ: 各レースIDの取得結果を確認
+            print(f"Successfully fetched data for race_id: {id}")
         except TimeoutException as e:
             print(f"タイムアウトエラー: {id} - {str(e)}")
         except Exception as e:
             print(f"その他のエラーが発生しました。race_id: {id} - {str(e)}")
+            ol.append([])  # エラーが発生した場合でも空のリストを追加
         finally:
             driver.quit()
             driver = webdriver.Chrome(service=service, options=options)
@@ -80,7 +93,13 @@ def lambda_handler(event, context):
     # driver.quit()はforループの外で呼び出す
     driver.quit()
     
-    do = pd.concat([df for df_list in ol for df in df_list])
+    if not ol:
+        return {
+            'statusCode': 200,
+            'body': json.dumps('No data fetched')
+        }
+    
+    do = pd.concat([df for df_list in ol for df in df_list if df_list])  # 空のリストを除外
     # DataFrameをpickle形式でバイナリデータに変換
     pickle_buffer = io.BytesIO()
     do.to_pickle(pickle_buffer)
