@@ -43,9 +43,6 @@ def lambda_handler(event, context):
     options.add_argument(f"--disk-cache-dir={mkdtemp()}")
     options.add_argument("--remote-debugging-port=9222")
     
-    driver = webdriver.Chrome(service=service, options=options)
-    wait = WebDriverWait(driver, 10)  # WebDriverWaitのインスタンスを初期化
-
     bucket_name = "layerk"
     file_key = "o.pkl"  # 正しいファイル名を指定してください
     
@@ -58,7 +55,6 @@ def lambda_handler(event, context):
     # デバッグ: id_listの内容を確認
     print(f"id_list: {id_list}")
     if id_list is None or len(id_list) == 0:
-        driver.quit()
         return {
             'statusCode': 200,
             'body': json.dumps('id_list is empty')
@@ -70,6 +66,9 @@ def lambda_handler(event, context):
         param_race_id = str(id)[:4] + str(id)[-8:]
         url = f'{base_url}?type=b8&race_id={param_race_id}&housiki=c2'
         try:
+            driver = webdriver.Chrome(service=service, options=options)
+            wait = WebDriverWait(driver, 10)  # WebDriverWaitのインスタンスを初期化
+
             driver.get(url)
             # 全選択ボタンをクリック（要素が見つかるまで最大10秒間待つ）
             wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "label[for='btn_sel_1'].All_Action_Button"))).click()
@@ -89,11 +88,7 @@ def lambda_handler(event, context):
             ol.append([])  # エラーが発生した場合でも空のリストを追加
         finally:
             driver.quit()
-            driver = webdriver.Chrome(service=service, options=options)
 
-    # driver.quit()はforループの外で呼び出す
-    driver.quit()
-    
     if not ol or all(len(df_list) == 0 for df_list in ol):
         return {
             'statusCode': 200,
