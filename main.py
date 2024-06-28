@@ -1,3 +1,11 @@
+import numpy as np
+import pandas as pd
+import boto3
+import pickle
+import json
+import io
+import time
+from tempfile import mkdtemp
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
@@ -5,16 +13,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
-from bs4 import BeautifulSoup
-import requests
-import time
-import pickle
-import pandas as pd
-import re
-import boto3
-import io
-from tempfile import mkdtemp
-import json
 
 def load_pickle_from_s3(bucket_name, file_key):
     s3 = boto3.client('s3')
@@ -49,14 +47,17 @@ def lambda_handler(event, context):
     wait = WebDriverWait(driver, 10)  # WebDriverWaitのインスタンスを初期化
 
     bucket_name = "layerk"
-    file_key = "ol.pkl"
+    file_key = "o.pkl"  # 正しいファイル名を指定してください
     
     ol = []
     id_list = load_pickle_from_s3(bucket_name, file_key)
+    
+    if isinstance(id_list, np.ndarray):
+        id_list = id_list.tolist()
 
     # デバッグ: id_listの内容を確認
     print(f"id_list: {id_list}")
-    if not id_list:
+    if id_list is None or len(id_list) == 0:
         driver.quit()
         return {
             'statusCode': 200,
@@ -93,13 +94,21 @@ def lambda_handler(event, context):
     # driver.quit()はforループの外で呼び出す
     driver.quit()
     
-    if not ol:
+    if not ol or all(len(df_list) == 0 for df_list in ol):
         return {
             'statusCode': 200,
             'body': json.dumps('No data fetched')
         }
     
-    do = pd.concat([df for df_list in ol for df in df_list if df_list])  # 空のリストを除外
+    try:
+        do = pd.concat([df for df_list in ol for df in df_list if df_list])  # 空のリストを除外
+    except ValueError as e:
+        print(f"データの連結に失敗しました: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps('Failed to concatenate data')
+        }
+    
     # DataFrameをpickle形式でバイナリデータに変換
     pickle_buffer = io.BytesIO()
     do.to_pickle(pickle_buffer)
