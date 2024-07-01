@@ -78,7 +78,7 @@ def lambda_handler(event, context):
             time.sleep(10)
             # テーブルの内容を取得
             innerHTML = wait.until(EC.presence_of_element_located((By.ID, "sort_table"))).get_attribute('outerHTML')
-            df_list = pd.read_html(StringIO(innerHTML))
+            df_list = pd.read_html(StringIO(innerHTML))[0]
             df_list['選択']=int(id)
             ol.append(df_list)
             # デバッグ: 各レースIDの取得結果を確認
