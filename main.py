@@ -13,6 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from io import StringIO
 
 def load_pickle_from_s3(bucket_name, file_key):
     s3 = boto3.client('s3')
@@ -77,7 +78,7 @@ def lambda_handler(event, context):
             time.sleep(10)
             # テーブルの内容を取得
             innerHTML = wait.until(EC.presence_of_element_located((By.ID, "sort_table"))).get_attribute('outerHTML')
-            df_list = pd.read_html(innerHTML)
+            df_list = pd.read_html(StringIO(innerHTML))
             ol.append(df_list)
             # デバッグ: 各レースIDの取得結果を確認
             print(f"Successfully fetched data for race_id: {id}")
