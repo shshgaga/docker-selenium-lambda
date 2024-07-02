@@ -98,7 +98,7 @@ def lambda_handler(event, context):
         }
     
     try:
-        do = pd.concat([df for df_list in ol for df in df_list if df_list])  # 空のリストを除外
+        do = pd.concat(ol, ignore_index=True)  # 空のデータフレームを除外して連結
     except ValueError as e:
         print(f"データの連結に失敗しました: {str(e)}")
         return {
